@@ -1,0 +1,51 @@
+{
+  "name": "LED Display Solutions Hub",
+  "short_name": "LED Solutions",
+  "description": "LED display engineering tool - hardware configuration, power calculation, BOM management",
+  "start_url": "./index-en.html",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["fullscreen", "standalone", "minimal-ui"],
+  "background_color": "#F0F4FF",
+  "theme_color": "#1565C0",
+  "orientation": "any",
+  "lang": "en-US",
+  "dir": "ltr",
+  "categories": ["utilities", "business"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Hardware Config",
+      "short_name": "Hardware",
+      "description": "Quick LED panel hardware calculation",
+      "url": "./index-en.html#hardware",
+      "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "BOM List",
+      "short_name": "BOM",
+      "description": "Edit and manage bill of materials",
+      "url": "./index-en.html#bom",
+      "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Technical Report",
+      "short_name": "Report",
+      "description": "Generate technical proposal document",
+      "url": "./index-en.html#report",
+      "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
+    }
+  ],
+  "icons": [
+    { "src": "icons/icon-72.png", "sizes": "72x72", "type": "image/png" },
+    { "src": "icons/icon-96.png", "sizes": "96x96", "type": "image/png" },
+    { "src": "icons/icon-128.png", "sizes": "128x128", "type": "image/png" },
+    { "src": "icons/icon-144.png", "sizes": "144x144", "type": "image/png" },
+    { "src": "icons/icon-152.png", "sizes": "152x152", "type": "image/png" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-384.png", "sizes": "384x384", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "prefer_related_applications": false
+}

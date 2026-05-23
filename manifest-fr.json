@@ -1,0 +1,51 @@
+{
+  "name": "Hub Solutions Affichage LED",
+  "short_name": "Solutions LED",
+  "description": "Outil de calcul pour écrans LED - configuration matérielle, distribution électrique, nomenclature",
+  "start_url": "./index-fr.html",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["fullscreen", "standalone", "minimal-ui"],
+  "background_color": "#F0F4FF",
+  "theme_color": "#1565C0",
+  "orientation": "any",
+  "lang": "fr-FR",
+  "dir": "ltr",
+  "categories": ["utilities", "business"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Configuration matérielle",
+      "short_name": "Matériel",
+      "description": "Calcul rapide des paramètres d'écran LED",
+      "url": "./index-fr.html#hardware",
+      "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Nomenclature",
+      "short_name": "BOM",
+      "description": "Gérer la nomenclature",
+      "url": "./index-fr.html#bom",
+      "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Rapport technique",
+      "short_name": "Rapport",
+      "description": "Générer un rapport technique",
+      "url": "./index-fr.html#report",
+      "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
+    }
+  ],
+  "icons": [
+    { "src": "icons/icon-72.png", "sizes": "72x72", "type": "image/png" },
+    { "src": "icons/icon-96.png", "sizes": "96x96", "type": "image/png" },
+    { "src": "icons/icon-128.png", "sizes": "128x128", "type": "image/png" },
+    { "src": "icons/icon-144.png", "sizes": "144x144", "type": "image/png" },
+    { "src": "icons/icon-152.png", "sizes": "152x152", "type": "image/png" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-384.png", "sizes": "384x384", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "prefer_related_applications": false
+}
