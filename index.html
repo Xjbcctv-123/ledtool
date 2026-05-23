@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LED显示屏方案宝 v1.0</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1565C0">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+  :root {
+    --primary: #1565C0;
+    --primary-dark: #0D47A1;
+    --primary-light: #1976D2;
+    --accent: #FF6D00;
+    --accent-light: #FF9100;
+    --bg: #F0F4FF;
+    --card: #FFFFFF;
+    --border: #BBDEFB;
+    --text: #1A237E;
+    --text2: #546E7A;
+    --text3: #37474F;
+    --success: #1B5E20;
+    --success-bg: #E8F5E9;
+    --warn: #E65100;
+    --warn-bg: #FFF3E0;
+    --error: #B71C1C;
+    --error-bg: #FFEBEE;
+    --radius: 10px;
+    --shadow: 0 2px 12px rgba(21,101,192,0.10);
+    --shadow2: 0 4px 24px rgba(21,101,192,0.18);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scrollbar-gutter: stable; overflow-y: scroll; }
+  body {
+    font-family: 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text3);
+    min-height: 100vh;
+  }
+
+  /* ====== Header ====== */
+  .header {
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-light) 60%, #1E88E5 100%);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    height: 64px;
+    box-shadow: 0 2px 12px rgba(13,71,161,0.3);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+  .header-logo {
+    width: 40px; height: 40px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 900; color: #fff;
+    box-shadow: 0 2px 8px rgba(255,109,0,0.4);
+    flex-shrink: 0;
+  }
+  .header-title { font-size: 22px; font-weight: 700; letter-spacing: 2px; }
+  .header-sub { font-size: 13px; opacity: 0.75; margin-left: 4px; }
+  .header-version {
+    margin-left: auto;
+    background: rgba(255,255,255,0.18);
+    border-radius: 20px;
+    padding: 2px 12px;
+    font-size: 12px;
+    border: 1px solid rgba(255,255,255,0.3);
+  }
+
+  /* ====== Tab Nav ====== */
+  .tab-nav {
+    background: var(--primary-dark);
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-gutter: stable;
+  }
+  .tab-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    width: 100%;
+    display: flex;
+    gap: 0;
+  }
+  .tab-btn {
+    padding: 12px 22px;
+    color: rgba(255,255,255,0.65);
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    font-family: inherit;
+    border-bottom: 3px solid transparent;
+    transition: background 0.2s, color 0.2s, border-bottom-color 0.2s;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tab-btn:hover { color: #fff; background: rgba(255,255,255,0.08); }
+  .tab-btn.active {
+    color: #fff;
+    border-bottom-color: var(--accent);
+    background: rgba(255,255,255,0.12);
+    font-weight: 600;
+  }
+  .tab-icon { font-size: 16px; }
+
+  /* Language selector in tab nav */
+  .lang-select {
+    margin-left: auto;
+    padding: 6px 28px 6px 10px;
+    border: 1.5px solid rgba(255,255,255,0.35);
+    border-radius: 6px;
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23fff' d='M6 8L2 4h8z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    min-width: 120px;
+  }
+  .lang-select option {
+    background: var(--primary-dark);
+    color: #fff;
+  }
+  .lang-select:hover {
+    background: rgba(255,255,255,0.2);
+    border-color: rgba(255,255,255,0.5);
+  }
+
+  /* ====== Main Content ====== */
+  .main { padding: 24px 24px 40px; max-width: 1200px; margin: 0 auto; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ====== Section Card ====== */
+  .section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+  }
+
+  /* ====== Form Grid ====== */
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group label {
+    font-size: 13px;
+    color: var(--text2);
+    font-weight: 500;
+  }
+  .form-group input, .form-group select {
+    padding: 8px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    font-size: 14px;
+    color: var(--text3);
+    background: #F8FBFF;
+    transition: border 0.2s, box-shadow 0.2s;
+    font-family: inherit;
+  }
+  .form-group input:focus, .form-group select:focus {
+    border-color: var(--primary-light);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(25,118,210,0.12);
+    background: #fff;
+  }
+  .form-group .hint {
+    font-size: 11px;
+    color: #90A4AE;
+  }
+
+  /* ====== Buttons ====== */
+  .btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+  .btn {
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-primary {
+    background: var(--primary);
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(21,101,192,0.3);
+  }
+  .btn-primary:hover { background: var(--primary-dark); box-shadow: 0 4px 12px rgba(21,101,192,0.4); transform: translateY(-1px); }
+  .btn-accent {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(255,109,0,0.3);
+  }
+  .btn-accent:hover { background: #E65100; box-shadow: 0 4px 12px rgba(255,109,0,0.4); transform: translateY(-1px); }
+  .btn-outline {
+    background: transparent;
+    color: var(--primary);
+    border: 1.5px solid var(--primary);
+  }
+  .btn-outline:hover { background: rgba(21,101,192,0.06); }
+  .btn-success {
+    background: #2E7D32;
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(46,125,50,0.3);
+  }
+  .btn-success:hover { background: #1B5E20; transform: translateY(-1px); }
+
+  /* ====== Result Box ====== */
+  .result-box {
+    background: linear-gradient(135deg, #E3F2FD 0%, #EDE7F6 100%);
+    border: 1px solid #BBDEFB;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 16px;
+  }
+  .result-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .result-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+  }
+  .result-item {
+    background: #fff;
+    border-radius: 8px;
+    padding: 12px 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    border-left: 4px solid var(--primary);
+  }
+  .result-item.accent { border-left-color: var(--accent); }
+  .result-item.success { border-left-color: #2E7D32; }
+  .result-item.warn { border-left-color: #F57C00; }
+  .result-label { font-size: 12px; color: var(--text2); margin-bottom: 4px; }
+  .result-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--primary-dark);
+    line-height: 1.2;
+  }
+  .result-value.accent { color: var(--accent); }
+  .result-value.success { color: #2E7D32; }
+  .result-unit { font-size: 12px; font-weight: 400; color: var(--text2); margin-left: 3px; }
+
+  /* ====== Alert Box ====== */
+  .alert {
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    margin-top: 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    line-height: 1.6;
+  }
+  .alert-info { background: #E3F2FD; border-left: 4px solid var(--primary-light); color: var(--primary-dark); }
+  .alert-warn { background: var(--warn-bg); border-left: 4px solid var(--accent); color: var(--warn); }
+  .alert-success { background: var(--success-bg); border-left: 4px solid #2E7D32; color: var(--success); }
+
+  /* ====== Table ====== */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-top: 4px;
+  }
+  .data-table th {
+    background: var(--primary);
+    color: #fff;
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+  }
+  .data-table th:first-child { border-radius: 6px 0 0 0; }
+  .data-table th:last-child { border-radius: 0 6px 0 0; }
+  .data-table td {
+    padding: 9px 12px;
+    border-bottom: 1px solid #E3F2FD;
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:nth-child(even) td { background: #F8FBFF; }
+  .data-table .num { font-weight: 600; color: var(--primary-dark); }
+  .data-table .total-row td { background: #E3F2FD !important; font-weight: 700; color: var(--primary-dark); }
+
+  /* ====== BOM Table ====== */
+  .bom-wrapper { overflow-x: auto; margin-top: 12px; }
+  /* BOM可编辑input样式 */
+  .data-table input[type=text],
+  .data-table input[type=number] {
+    background: transparent;
+    border: none;
+    border-bottom: 1px dashed #90A4AE;
+    padding: 3px 2px;
+    font-size: 13px;
+    color: #333;
+    width: 100%;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .data-table input[type=text]:focus,
+  .data-table input[type=number]:focus {
+    border-bottom-color: var(--primary);
+    background: #F0F7FF;
+  }
+  .data-table input[type=text] { text-align: left; }
+  .data-table input[type=number] { text-align: center; }
+
+  /* ====== Report Area ====== */
+  .report-area {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px 28px;
+    font-size: 13px;
+    line-height: 1.9;
+    white-space: pre-wrap;
+    color: var(--text3);
+    max-height: 580px;
+    overflow-y: auto;
+    margin-top: 12px;
+    font-family: 'Microsoft YaHei', 'PingFang SC', monospace;
+  }
+
+  /* ====== Divider ====== */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 20px 0;
+  }
+
+  /* ====== Responsive: Mobile ====== */
+  @media (max-width: 768px) {
+    /* Header */
+    .header { height: 52px; }
+    .header-inner { padding: 0 12px; gap: 10px; }
+    .header-logo { width: 32px; height: 32px; font-size: 18px; }
+    .header-title { font-size: 15px; letter-spacing: 1px; }
+    .header-sub { display: none; }
+    .header-version { font-size: 10px; padding: 2px 8px; }
+
+    /* Tab Nav - scrollable */
+    .tab-nav { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .tab-inner { padding: 0 8px; min-width: max-content; }
+    .tab-btn { padding: 10px 12px; font-size: 12px; gap: 4px; }
+    .tab-icon { font-size: 14px; }
+    .lang-select { font-size: 11px; padding: 4px 24px 4px 8px; min-width: 90px; margin-left: 8px; }
+
+    /* Main */
+    .main { padding: 12px 8px 32px; }
+
+    /* Section */
+    .card { padding: 16px 12px; margin-bottom: 12px; border-radius: 8px; }
+    .section-title { font-size: 14px; margin-bottom: 12px; padding-bottom: 6px; }
+
+    /* Forms: single column */
+    .form-grid { grid-template-columns: 1fr; gap: 10px; }
+    .form-group label { font-size: 13px; }
+    .form-group input, .form-group select { padding: 10px 12px; font-size: 16px; }
+    .form-group .hint { font-size: 10px; }
+
+    /* Buttons: full width, big touch target */
+    .btn-row { flex-direction: column; gap: 8px; }
+    .btn { width: 100%; justify-content: center; padding: 12px 20px; font-size: 15px; }
+
+    /* Results: single column */
+    .result-grid { grid-template-columns: 1fr; gap: 8px; }
+    .result-item { padding: 12px 14px; }
+    .result-value { font-size: 18px; }
+
+    /* Step indicator */
+    .step-indicator { margin-bottom: 14px; border-radius: 6px; }
+    .step { padding: 8px 4px; font-size: 10px; }
+
+    /* Tables: scroll */
+    .data-table { font-size: 12px; }
+    .data-table th, .data-table td { padding: 8px 6px; }
+    .bom-wrapper, .dbm-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+    /* Modal: full screen */
+    .dbm-modal-content { width: 100vw; max-width: 100vw; max-height: 100vh; border-radius: 0; }
+    .dbm-modal-header { border-radius: 0; padding: 12px 16px; font-size: 14px; }
+    .dbm-modal-body { padding: 14px; }
+    .dbm-modal-footer { padding: 12px 16px; flex-direction: column; gap: 8px; }
+    .dbm-modal-footer .btn { width: 100%; }
+    .dbm-form-grid { grid-template-columns: 1fr; gap: 10px; }
+
+    /* DBM toolbar */
+    .dbm-toolbar { flex-direction: column; align-items: stretch; gap: 8px; }
+    .dbm-subnav { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .dbm-subtab { font-size: 12px; padding: 8px 12px; white-space: nowrap; }
+
+    /* Chips */
+    .chip-row { gap: 6px; }
+    .chip { padding: 6px 14px; font-size: 13px; }
+
+    /* Report */
+    .report-area { padding: 16px 12px; font-size: 12px; max-height: 400px; }
+
+    /* Alert */
+    .alert { font-size: 12px; padding: 10px 12px; }
+
+    /* Footer */
+    .app-footer { padding: 12px 0 8px; font-size: 11px; margin-top: 16px; }
+
+    /* Separator */
+    .sep { margin: 12px 0 8px; }
+    .sep span { font-size: 12px; }
+
+    /* Radio buttons and labels */
+    input[type=radio] { width: 20px; height: 20px; }
+    input[type=checkbox] { width: 18px; height: 18px; }
+
+    /* Touch-friendly range slider */
+    input[type=range] { height: 10px; }
+    input[type=range]::-webkit-slider-thumb { width: 24px; height: 24px; }
+  }
+
+  /* Small phones */
+  @media (max-width: 380px) {
+    .header-title { font-size: 13px; }
+    .tab-btn { padding: 8px 8px; font-size: 11px; }
+    .tab-icon { font-size: 13px; }
+    .data-table { font-size: 11px; }
+    .data-table th, .data-table td { padding: 6px 4px; }
+  }
+
+  /* ====== Print ====== */
+  @media print {
+    .header, .tab-nav, .btn-row, .btn { display: none !important; }
+    .tab-panel { display: block !important; page-break-inside: avoid; }
+    body { background: #fff; }
+  }
+
+  /* Range slider */
+  input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: #BBDEFB;
+    border: none;
+    outline: none;
+    padding: 0;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--primary);
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  }
+
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-left: 6px;
+  }
+  .tag-blue { background: #BBDEFB; color: var(--primary-dark); }
+  .tag-orange { background: #FFE0B2; color: #E65100; }
+  .tag-green { background: #C8E6C9; color: #1B5E20; }
+  .tag-red { background: #FFCDD2; color: #B71C1C; }
+
+  .step-indicator {
+    display: flex;
+    gap: 0;
+    margin-bottom: 24px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .step {
+    flex: 1;
+    padding: 10px 8px;
+    text-align: center;
+    font-size: 12px;
+    background: #E3F2FD;
+    color: var(--text2);
+    border-right: 1px solid #BBDEFB;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .step:last-child { border-right: none; }
+  .step.done { background: #C8E6C9; color: #1B5E20; }
+  .step.active { background: var(--primary); color: #fff; font-weight: 700; }
+
+  .sep { display: flex; align-items: center; gap: 10px; margin: 16px 0 12px; }
+  .sep span { font-size: 13px; font-weight: 700; color: var(--primary-dark); white-space: nowrap; }
+  .sep::before, .sep::after { content: ''; flex: 1; height: 1px; background: #BBDEFB; }
+
+  .chip-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0 16px; }
+  .chip {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    border: 1.5px solid var(--border);
+    background: #F8FBFF;
+    color: var(--text2);
+    transition: all 0.15s;
+  }
+  .chip.selected { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .chip:hover:not(.selected) { border-color: var(--primary-light); color: var(--primary); }
+
+  /* ====== Data Management (DBM) ====== */
+  .dbm-subnav {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .dbm-subtab {
+    padding: 8px 18px;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--text2);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s;
+    white-space: nowrap;
+    font-weight: 500;
+  }
+  .dbm-subtab:hover { color: var(--primary); background: #F0F4FF; }
+  .dbm-subtab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 700; }
+  .dbm-panel { }
+  .dbm-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .dbm-table-title { font-size: 14px; font-weight: 700; color: var(--primary-dark); }
+  .dbm-count {
+    background: var(--border);
+    color: var(--primary-dark);
+    border-radius: 10px;
+    padding: 1px 8px;
+    font-size: 12px;
+    margin-left: 6px;
+  }
+  .dbm-wrapper { overflow-x: auto; }
+  .dbm-empty { text-align: center; color: #90A4AE; padding: 32px; font-size: 13px; }
+
+  /* 操作按钮 */
+  .btn-sm { padding: 6px 14px; font-size: 12px; }
+  .btn-danger { background: #C62828; color: #fff; box-shadow: 0 2px 6px rgba(198,40,40,0.3); }
+  .btn-danger:hover { background: #B71C1C; }
+  .btn-edit { background: #1565C0; color: #fff; padding: 4px 10px; border-radius: 4px; font-size: 12px; border: none; cursor: pointer; }
+  .btn-del  { background: #C62828; color: #fff; padding: 4px 10px; border-radius: 4px; font-size: 12px; border: none; cursor: pointer; margin-left: 4px; }
+
+  /* Modal */
+  .dbm-modal {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999;
+  }
+  .dbm-modal-content {
+    background: #fff;
+    border-radius: 12px;
+    width: 560px;
+    max-width: 95vw;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.3);
+  }
+  .dbm-modal-header {
+    background: var(--primary-dark);
+    color: #fff;
+    padding: 14px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-radius: 12px 12px 0 0;
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .dbm-modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+  }
+  .dbm-modal-footer {
+    padding: 14px 20px;
+    border-top: 1px solid #E3F2FD;
+    display: flex; gap: 10px; justify-content: flex-end;
+  }
+  .dbm-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .dbm-form-group { display: flex; flex-direction: column; gap: 4px; }
+  .dbm-form-group label { font-size: 12px; color: var(--text2); font-weight: 600; }
+  .dbm-form-group input,
+  .dbm-form-group select,
+  .dbm-form-group textarea {
+    padding: 8px 10px;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--text3);
+    background: #F8FBFF;
+  }
+  .dbm-form-group textarea { resize: vertical; min-height: 60px; }
+  .dbm-form-group input:focus,
+  .dbm-form-group select:focus,
+  .dbm-form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-light);
+    background: #fff;
+  }
+  .dbm-form-full { grid-column: 1 / -1; }
+  /* 页脚定制服务提示 */
+  .app-footer {
+    text-align: center;
+    padding: 16px 0 12px;
+    color: var(--text2);
+    font-size: 12px;
+    border-top: 1px solid var(--border);
+    margin-top: 24px;
+  }
+  .app-footer a { color: var(--primary); text-decoration: none; }
+  .app-footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-inner">
+    <div class="header-logo">L</div>
+    <div>
+      <div class="header-title">LED显示屏方案宝</div>
+      <div class="header-sub">专业工程计算 · 方案设计 · 报价生成</div>
+    </div>
+    <div class="header-version">v1.0</div>
+  </div>
+</div>
+
+<!-- Tab Nav -->
+<div class="tab-nav">
+  <div class="tab-inner">
+    <button class="tab-btn active" data-tab="hardware" onclick="switchTab('hardware')">
+      <span class="tab-icon">🖥️</span>硬件配置计算
+    </button>
+    <button class="tab-btn" data-tab="power" onclick="switchTab('power')">
+      <span class="tab-icon">⚡</span>电力配电计算
+    </button>
+    <button class="tab-btn" data-tab="aux" onclick="switchTab('aux')">
+      <span class="tab-icon">🌡️</span>辅助系统计算
+    </button>
+    <button class="tab-btn" data-tab="bom" onclick="switchTab('bom')">
+      <span class="tab-icon">📋</span>BOM物料清单
+    </button>
+    <button class="tab-btn" data-tab="report" onclick="switchTab('report')">
+      <span class="tab-icon">📄</span>技术方案书
+    </button>
+    <button class="tab-btn" data-tab="dbm" onclick="switchTab('dbm')">
+      <span class="tab-icon">📚</span>数据管理
+    </button>
+    <select class="lang-select" onchange="if(this.value) location.href=this.value;">
+      <option value="">🌐 Language</option>
+      <option value="index.html" selected>中文</option>
+      <option value="index-en.html">English</option>
+      <option value="index-fr.html">Français</option>
+    </select>
+  </div>
+</div>
+
+<!-- ===================== MAIN ===================== -->
+<div class="main">
+
+<!-- ==================== TAB 1: 硬件 ==================== -->
+<div id="tab-hardware" class="tab-panel active">
+
+  <!-- Step indicator -->
+  <div class="step-indicator">
+    <div class="step active">① 屏体参数</div>
+    <div class="step">② 模组/箱体</div>
+    <div class="step">③ 观看距离</div>
+    <div class="step">④ 控制系统</div>
+  </div>
+
+  <!-- 屏体基本参数 -->
+  <div class="card">
+    <div class="section-title">🖥️ 显示屏基本参数</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>屏体宽度 (mm)</label>
+        <input type="number" id="h_width" value="6000" min="100" max="100000" oninput="calcHardware()">
+        <span class="hint">实际安装宽度</span>
+      </div>
+      <div class="form-group">
+        <label>屏体高度 (mm)</label>
+        <input type="number" id="h_height" value="3000" min="100" max="100000" oninput="calcHardware()">
+        <span class="hint">实际安装高度</span>
+      </div>
+      <div class="form-group">
+        <label>像素间距 Pitch (mm)</label>
+        <select id="h_pitch" onchange="onPitchChange()">
+          <!-- 由 _populatePitchSelect() 动态填充 -->
+        </select>
+      </div>
+      <div class="form-group">
+        <label>应用场景</label>
+        <select id="h_scene" onchange="calcHardware()">
+          <option value="indoor">室内</option>
+          <option value="outdoor" selected>室外</option>
+          <option value="stage">舞台演出</option>
+          <option value="traffic">交通诱导</option>
+        </select>
+      </div>
+      <div class="form-group" id="pitch_from_module_note" style="display:none;grid-column:1/-1;flex-direction:row;align-items:center">
+        <span id="pitch_module_note" style="font-size:11px;color:var(--primary);background:#E3F2FD;padding:4px 10px;border-radius:4px;border:1px solid #BBDEFB;white-space:nowrap"></span>
+      </div>
+    </div>
+
+    <!-- 是否有箱体 -->
+    <div class="sep"><span>是否有箱体</span></div>
+    <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;margin-bottom:10px">
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px;font-weight:600;color:var(--text3)">
+        <input type="radio" name="has_box" id="has_box_yes" value="yes" onchange="onBoxRadioChange()" style="width:16px;height:16px;accent-color:var(--primary);cursor:pointer">
+        是
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px;font-weight:600;color:var(--text3)">
+        <input type="radio" name="has_box" id="has_box_no" value="no" onchange="onBoxRadioChange()" checked style="width:16px;height:16px;accent-color:var(--primary);cursor:pointer">
+        否
+      </label>
+      <!-- 箱体型号下拉，仅选"是"时显示 -->
+      <div id="box_preset_group" style="display:none;align-items:center;gap:8px">
+        <label style="font-size:13px;color:var(--text2);white-space:nowrap">选择箱体规格：</label>
+        <select id="box_preset_select" onchange="applyBoxPreset()" style="padding:7px 12px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;color:var(--text3);background:#F8FBFF;font-family:inherit;min-width:220px">
+          <option value="">-- 请选择箱体 --</option>
+        </select>
+        <span id="box_fit_status" style="font-size:12px;font-weight:600;white-space:nowrap"></span>
+      </div>
+    </div>
+
+    <!-- 结果 -->
+    <div class="result-box" id="hw_pixel_result">
+      <div class="result-title">📐 像素分辨率计算结果</div>
+      <div class="result-grid" id="hw_pixel_grid"></div>
+      <div id="hw_pixel_note" class="alert alert-info" style="margin-top:12px"></div>
+    </div>
+  </div>
+
+  <!-- 模组/箱体计算 -->
+  <div class="card">
+    <div class="section-title">📦 模组 / 箱体数量计算</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>单模组像素宽 (px)</label>
+        <input type="number" id="h_mod_w" value="32" min="1" readonly style="background:#f0f0f0;color:#666;cursor:not-allowed">
+      </div>
+      <div class="form-group">
+        <label>单模组像素高 (px)</label>
+        <input type="number" id="h_mod_h" value="16" min="1" readonly style="background:#f0f0f0;color:#666;cursor:not-allowed">
+      </div>
+      <div class="form-group">
+        <label>箱体横向模组数</label>
+        <input type="number" id="h_box_mw" value="8" min="1" readonly style="background:#f0f0f0;color:#666;cursor:not-allowed">
+        <span class="hint">自动计算，不可修改</span>
+      </div>
+      <div class="form-group">
+        <label>箱体纵向模组数</label>
+        <input type="number" id="h_box_mh" value="4" min="1" readonly style="background:#f0f0f0;color:#666;cursor:not-allowed">
+        <span class="hint">自动计算，不可修改</span>
+      </div>
+    </div>
+
+
+
+    <div class="result-box" id="hw_box_result">
+      <div class="result-title">📦 模组/箱体数量结果</div>
+      <div class="result-grid" id="hw_box_grid"></div>
+      <div id="hw_box_note"></div>
+    </div>
+  </div>
+
+  <!-- 观看距离 -->
+  <div class="card">
+    <div class="section-title">👁️ 最佳观看距离计算</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>视角系数 K1 (最佳倍数)</label>
+        <input type="number" id="h_k1" value="1000" min="100" max="5000" oninput="calcHardware()">
+        <span class="hint">最佳距离 = Pitch × K1</span>
+      </div>
+      <div class="form-group">
+        <label>最远倍数 K2</label>
+        <input type="number" id="h_k2" value="3500" min="100" max="10000" oninput="calcHardware()">
+        <span class="hint">最远距离 = Pitch × K2</span>
+      </div>
+      <div class="form-group">
+        <label>最近倍数 K3</label>
+        <input type="number" id="h_k3" value="500" min="10" max="2000" oninput="calcHardware()">
+        <span class="hint">最近距离 = Pitch × K3</span>
+      </div>
+    </div>
+    <div class="result-box">
+      <div class="result-title">👁️ 观看距离范围</div>
+      <div class="result-grid" id="hw_dist_grid"></div>
+    </div>
+  </div>
+
+  <!-- 控制系统 -->
+  <div class="card">
+    <div class="section-title">🎛️ 控制系统硬件计算</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>发送卡品牌/型号</label>
+        <select id="h_sender_type" onchange="calcHardware()">
+          <option value="">加载中...</option>
+        </select>
+        <span class="hint">来自控制系统库，括号内为带载能力</span>
+      </div>
+      <div class="form-group" id="sender_custom_group" style="display:none">
+        <label>发送卡自定义带载 (万像素)</label>
+        <input type="number" id="h_sender_cap" value="130" min="1" oninput="calcHardware()">
+      </div>
+      <div class="form-group">
+        <label>接收卡品牌/型号</label>
+        <select id="h_recv_type" onchange="calcHardware()">
+          <option value="">加载中...</option>
+        </select>
+        <span class="hint">来自接收卡库，括号内为带载分辨率</span>
+      </div>
+      <div class="form-group" id="recv_config_group">
+        <label id="recv_config_label">每卡带载像素 (宽×高)</label>
+        <div id="recv_load_content">
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="number" id="h_recv_load_w" value="128" min="1" max="2048" oninput="calcHardware()" style="width:80px">
+            <span>×</span>
+            <input type="number" id="h_recv_load_h" value="128" min="1" max="2048" oninput="calcHardware()" style="width:80px">
+            <span style="font-size:12px;color:var(--text2)">px</span>
+          </div>
+          <span class="hint">每张接收卡实际带载像素区域，如128×128。</span>
+        </div>
+        <div id="recv_perbox_content" style="display:none">
+          <input type="number" id="h_recv_per_box" value="1" min="1" max="16" oninput="calcHardware()" style="width:100%">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>视频处理器品牌/型号</label>
+        <select id="h_vprocessor_type" onchange="calcHardware()">
+          <option value="">-- 请选择视频处理器 --</option>
+        </select>
+      </div>
+    </div>
+    <div class="result-box">
+      <div class="result-title">🎛️ 控制系统计算结果</div>
+      <div class="result-grid" id="hw_ctrl_grid"></div>
+      <div id="hw_ctrl_note" class="alert" style="margin-top:12px;display:none"></div>
+    </div>
+  </div>
+
+</div><!-- end tab-hardware -->
+
+<!-- ==================== TAB 2: 电力 ==================== -->
+<div id="tab-power" class="tab-panel">
+
+  <!-- 功耗计算 -->
+  <div class="card">
+    <div class="section-title">⚡ 屏体功耗计算</div>
+    <div id="pw_module_info" class="alert" style="background:#E3F2FD;border:1px solid #BBDEFB;color:var(--primary-dark);margin-bottom:12px;display:none">
+      📦 来自硬件配置：<b id="pw_mod_name"></b>，已自动同步
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>模组总数 (块)</label>
+        <input type="number" id="pw_total_modules" value="0" min="0" oninput="calcPower()">
+        <span class="hint">可从硬件配置自动获取，或手动填写</span>
+      </div>
+      <div class="form-group">
+        <label>单模组功耗 (W)</label>
+        <input type="number" id="pw_mod_power_input" value="45" min="1" step="0.1" oninput="calcPower()">
+        <span class="hint">查阅模组规格，或从数据库选取</span>
+      </div>
+      <div class="form-group">
+        <label>箱体总数 (个)</label>
+        <input type="number" id="pw_total_boxes" value="0" min="0" oninput="calcPower()" style="background:#F3F6FB" title="来自硬件配置：有箱体时自动同步，无箱体则为0">
+        <span class="hint">来自硬件配置自动同步，也可手动修改</span>
+      </div>
+    </div>
+
+    <div class="result-box">
+      <div class="result-title">⚡ 功耗计算结果</div>
+      <div class="result-grid" id="pw_power_grid"></div>
+      <div id="pw_power_note" class="alert alert-warn" style="margin-top:12px"></div>
+    </div>
+  </div>
+
+  <!-- 电源数量 -->
+  <div class="card">
+    <div class="section-title">🔋 开关电源配置</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>单个电源额定功率 (W)</label>
+        <select id="p_psu_rated" onchange="calcPower()">
+          <option value="">加载中...</option>
+        </select>
+      </div>
+      <div class="form-group" id="psu_custom_group" style="display:none">
+        <label>自定义电源功率 (W)</label>
+        <input type="number" id="p_psu_custom" value="200" min="10" oninput="calcPower()">
+      </div>
+      <div class="form-group">
+        <label>电源降额使用率 (%)</label>
+        <input type="number" id="p_psu_derate" value="80" min="50" max="95" oninput="calcPower()">
+        <span class="hint">建议≤80%，延长寿命</span>
+      </div>
+      <div class="form-group">
+        <label>冗余备份 (N+?)</label>
+        <select id="p_redundancy" onchange="calcPower()">
+          <option value="0">N+0 (无备份)</option>
+          <option value="1" selected>N+1 (标准备份)</option>
+          <option value="2">N+2 (双备份)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>电源输出电压 (V)</label>
+        <select id="p_psu_volt" onchange="calcPower()">
+          <option value="5">5V</option>
+          <option value="3.8">3.8V</option>
+          <option value="4.2">4.2V</option>
+        </select>
+      </div>
+    </div>
+    <div class="result-box">
+      <div class="result-title">🔋 电源配置结果</div>
+      <div class="result-grid" id="pw_psu_grid"></div>
+      <div id="pw_psu_note" class="alert alert-info" style="margin-top:12px"></div>
+    </div>
+  </div>
+
+  <!-- 线缆选型 -->
+  <div class="card">
+    <div class="section-title">🔌 线缆规格选型</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>分支回路电流 (A)</label>
+        <input type="number" id="p_branch_current" value="20" min="1" max="500" oninput="calcCable()">
+        <span class="hint">单回路最大工作电流</span>
+      </div>
+      <div class="form-group">
+        <label>线缆传输距离 (m)</label>
+        <input type="number" id="p_cable_len" value="20" min="1" max="500" oninput="calcCable()">
+      </div>
+      <div class="form-group">
+        <label>供电制式</label>
+        <select id="p_power_phase" onchange="calcCable()">
+          <option value="single">单相 220V</option>
+          <option value="three">三相 380V</option>
+        </select>
+        <span class="hint">单相压降≤11V (5%)，三相压降≤19V (5%)</span>
+      </div>
+      <div class="form-group">
+        <label>导线材质</label>
+        <select id="p_conductor" onchange="calcCable()">
+          <option value="copper">铜导线 (ρ=0.0175 Ω·mm²/m)</option>
+          <option value="aluminum">铝导线 (ρ=0.028 Ω·mm²/m)</option>
+        </select>
+      </div>
+    </div>
+    <div class="result-box">
+      <div class="result-title">🔌 线缆截面积计算（双重校验：载流量 + 压降）</div>
+      <div class="result-grid" id="pw_cable_grid"></div>
+      <div id="pw_cable_note" class="alert alert-info" style="margin-top:12px"></div>
+    </div>
+
+    <!-- 标准线径参考表 -->
+    <div class="sep"><span>标准线径载流量参考</span></div>
+    <table class="data-table">
+      <thead>
+        <tr><th>截面积 (mm²)</th><th>穿管允许载流量 (A)</th><th>明敷允许载流量 (A)</th><th>适用场景</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>0.75</td><td>6</td><td>8</td><td>模组信号供电</td></tr>
+        <tr><td>1.0</td><td>10</td><td>13</td><td>箱体内部走线</td></tr>
+        <tr><td>1.5</td><td>13</td><td>17</td><td>小功率回路</td></tr>
+        <tr><td>2.5</td><td>18</td><td>24</td><td>普通支路</td></tr>
+        <tr><td>4</td><td>25</td><td>32</td><td>标准回路</td></tr>
+        <tr><td>6</td><td>32</td><td>41</td><td>主回路</td></tr>
+        <tr><td>10</td><td>44</td><td>57</td><td>大功率主路</td></tr>
+        <tr><td>16</td><td>59</td><td>76</td><td>总进线</td></tr>
+        <tr><td>25</td><td>77</td><td>99</td><td>配电箱干线</td></tr>
+        <tr><td>35</td><td>94</td><td>120</td><td>大屏总进线</td></tr>
+        <tr><td>50</td><td>113</td><td>145</td><td>超大屏总进线</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div><!-- end tab-power -->
+
+<!-- ==================== TAB 3: 辅助系统 ==================== -->
+<div id="tab-aux" class="tab-panel">
+
+  <!-- 散热计算 -->
+  <div class="card">
+    <div class="section-title">🌡️ 散热需求计算</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>环境最高温度 (°C)</label>
+        <input type="number" id="a_env_temp" value="40" min="-20" max="60" oninput="calcAux()">
+      </div>
+      <div class="form-group">
+        <label>LED允许最高结温 (°C)</label>
+        <input type="number" id="a_max_junc" value="85" min="50" max="150" oninput="calcAux()">
+        <span class="hint">一般室内芯片≤85°C，户外≤100°C</span>
+      </div>
+      <div class="form-group">
+        <label>结温安全余量 (°C)</label>
+        <input type="number" id="a_margin" value="15" min="5" max="30" oninput="calcAux()">
+      </div>
+      <div class="form-group">
+        <label>散热方式</label>
+        <select id="a_cool_type" onchange="calcAux()">
+          <option value="natural">自然散热</option>
+          <option value="forced">强制风冷</option>
+          <option value="ac">空调制冷</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>散热风扇额定风量 (m³/h)</label>
+        <input type="number" id="a_fan_flow" value="120" min="10" max="2000" oninput="calcAux()">
+        <span class="hint">常用轴流风扇约80~150 m³/h</span>
+      </div>
+    </div>
+    <div class="result-box">
+      <div class="result-title">🌡️ 散热计算结果</div>
+      <div class="result-grid" id="aux_heat_grid"></div>
+      <div id="aux_heat_note" class="alert" style="margin-top:12px"></div>
+    </div>
+  </div>
+
+  <!-- 音频系统 -->
+  <div class="card">
+    <div class="section-title">🔊 音频功率估算</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>覆盖区域面积 (m²)</label>
+        <input type="number" id="a_area" value="200" min="1" oninput="calcAux()">
+      </div>
+      <div class="form-group">
+        <label>环境噪声级别 (dB)</label>
+        <select id="a_noise" onchange="calcAux()">
+          <option value="35">安静室内 35dB</option>
+          <option value="45" selected>普通室内 45dB</option>
+          <option value="55">嘈杂商场 55dB</option>
+          <option value="65">户外广场 65dB</option>
+          <option value="75">繁华路口 75dB</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>信噪比要求 (dB)</label>
+        <input type="number" id="a_snr" value="10" min="5" max="30" oninput="calcAux()">
+        <span class="hint">声音需高出噪声的分贝值</span>
+      </div>
+      <div class="form-group">
+        <label>单音箱额定功率 (W)</label>
+        <select id="a_speaker_w" onchange="calcAux()">
+          <option value="50">50W</option>
+          <option value="100" selected>100W</option>
+          <option value="150">150W</option>
+          <option value="200">200W</option>
+          <option value="300">300W</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>音箱灵敏度 (dB/W@1m)</label>
+        <input type="number" id="a_sens" value="95" min="80" max="110" oninput="calcAux()">
+        <span class="hint">专业音箱一般90~100dB</span>
+      </div>
+      <div class="form-group">
+        <label>覆盖距离 (m)</label>
+        <input type="number" id="a_dist" value="20" min="1" max="200" oninput="calcAux()">
+      </div>
+    </div>
+    <div class="result-box">
+      <div class="result-title">🔊 音频系统估算结果</div>
+      <div class="result-grid" id="aux_audio_grid"></div>
+      <div id="aux_audio_note" class="alert alert-info" style="margin-top:12px"></div>
+    </div>
+  </div>
+
+</div><!-- end tab-aux -->
+
+<!-- ==================== TAB 4: BOM ==================== -->
+<div id="tab-bom" class="tab-panel">
+  <div class="card">
+    <div class="section-title">📋 设备材料清单 (BOM)</div>
+    <div class="alert alert-info" style="margin-bottom:16px">
+      💡 BOM自动汇总以上所有计算结果，请先完成硬件、电力各模块的计算。物料可以自行添加或修改！
+    </div>
+    <div class="btn-row" style="margin-bottom:20px">
+      <button class="btn btn-primary" onclick="generateBOM()">🔄 重新生成BOM</button>
+      <button class="btn btn-success" onclick="exportBOM()">⬇️ 导出CSV</button>
+      <button class="btn btn-outline" onclick="printBOM()">🖨️ 打印</button>
+      <button class="btn btn-accent" onclick="showAddMaterialModal()">➕ 添加物料</button>
+    </div>
+    <div class="bom-wrapper">
+      <table class="data-table" id="bom_table">
+        <thead>
+          <tr>
+            <th style="min-width:30px">序号</th>
+            <th style="min-width:150px">物料名称</th>
+            <th style="min-width:80px">规格型号</th>
+            <th style="min-width:50px">单位</th>
+            <th style="min-width:50px">数量</th>
+            <th style="min-width:80px">参考单价(元)</th>
+            <th style="min-width:80px">小计(元)</th>
+            <th style="min-width:80px">备注</th>
+          </tr>
+        </thead>
+        <tbody id="bom_body">
+          <tr><td colspan="8" style="text-align:center;color:#90A4AE;padding:32px">点击"重新生成BOM"按钮后自动填充</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="bom_total" style="margin-top:16px;text-align:right"></div>
+  </div>
+</div>
+
+<!-- ==================== BOM 添加物料弹窗 ==================== -->
+<div id="bom_add_modal" class="dbm-modal" style="display:none">
+  <div class="dbm-modal-content" style="width:480px">
+    <div class="dbm-modal-header">
+      <span>➕ 手动添加物料</span>
+      <button onclick="closeAddMaterialModal()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer">&times;</button>
+    </div>
+    <div class="dbm-modal-body">
+      <div class="dbm-form-grid">
+        <div class="dbm-form-group dbm-form-full">
+          <label>物料名称 *</label>
+          <input type="text" id="bom_add_name" placeholder="例如：视频处理器、配电箱、线材等">
+        </div>
+        <div class="dbm-form-group dbm-form-full">
+          <label>规格型号</label>
+          <input type="text" id="bom_add_spec" placeholder="例如：4K输入、8路输出">
+        </div>
+        <div class="dbm-form-group">
+          <label>单位</label>
+          <input type="text" id="bom_add_unit" placeholder="个/台/套/米/张" value="个">
+        </div>
+        <div class="dbm-form-group">
+          <label>数量 *</label>
+          <input type="number" id="bom_add_qty" placeholder="1" min="0" step="1" value="1">
+        </div>
+        <div class="dbm-form-group">
+          <label>参考单价(元)</label>
+          <input type="number" id="bom_add_price" placeholder="0.00" min="0" step="0.01" value="0">
+        </div>
+        <div class="dbm-form-group dbm-form-full">
+          <label>备注</label>
+          <input type="text" id="bom_add_note" placeholder="品牌、型号或其他说明">
+        </div>
+      </div>
+    </div>
+    <div class="dbm-modal-footer">
+      <button class="btn btn-outline" onclick="closeAddMaterialModal()">取消</button>
+      <button class="btn btn-primary" onclick="confirmAddMaterial()">确认添加</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB 5: 技术方案书 ==================== -->
+<div id="tab-report" class="tab-panel">
+  <div class="card">
+    <div class="section-title">📄 技术方案书自动生成</div>
+    <div class="form-grid" style="margin-bottom:16px">
+      <div class="form-group">
+        <label>项目名称</label>
+        <input type="text" id="rpt_name" value="XXX大厦LED显示屏项目" oninput="genReport()">
+      </div>
+      <div class="form-group">
+        <label>甲方单位</label>
+        <input type="text" id="rpt_client" value="北京XX科技有限公司" oninput="genReport()">
+      </div>
+      <div class="form-group">
+        <label>乙方单位</label>
+        <input type="text" id="rpt_company" value="北京XX显示技术有限公司" oninput="genReport()">
+      </div>
+      <div class="form-group">
+        <label>编制日期</label>
+        <input type="date" id="rpt_date" oninput="genReport()">
+      </div>
+      <div class="form-group">
+        <label>安装地点</label>
+        <input type="text" id="rpt_location" value="北京市朝阳区" oninput="genReport()">
+      </div>
+      <div class="form-group">
+        <label>屏体安装形式</label>
+        <select id="rpt_mount" onchange="genReport()">
+          <option value="wall">墙面固定安装</option>
+          <option value="standalone">独立落地支架</option>
+          <option value="hanging">吊挂安装</option>
+          <option value="roof">屋顶安装</option>
+          <option value="stage">舞台弧形屏</option>
+          <option value="curved">异形弧面屏</option>
+        </select>
+      </div>
+    </div>
+    <div class="btn-row" style="margin-bottom:16px">
+      <button class="btn btn-primary" onclick="genReport()">📄 生成方案书</button>
+      <button class="btn btn-success" onclick="downloadReport()">⬇️ 下载Word文档</button>
+      <button class="btn btn-outline" onclick="window.print()">🖨️ 打印</button>
+    </div>
+    <div class="report-area" id="report_content">点击"生成方案书"按钮自动生成技术文档...</div>
+  </div>
+</div>
+
+<!-- ==================== TAB 6: 数据管理 ==================== -->
+<div id="tab-dbm" class="tab-panel">
+  <div class="card" style="margin-bottom:20px">
+    <div class="section-title">📚 本地数据库管理</div>
+    <div class="alert alert-info" style="margin-bottom:16px">
+      💡 所有数据保存在浏览器本地（localStorage），关闭后数据不丢失。支持增删改、批量导入/导出 JSON 备份。
+    </div>
+    <div class="btn-row" style="margin-bottom:16px">
+      <button class="btn btn-accent" onclick="DBM.exportAll()">⬇️ 导出JSON备份</button>
+      <button class="btn btn-primary" onclick="DBM.importAll()">⬆️ 导入JSON</button>
+      <button class="btn btn-success" onclick="DBM.exportExcel()">📊 导出Excel</button>
+      <button class="btn btn-primary" onclick="DBM.importExcel()" style="background:#2E7D32">📂 导入Excel</button>
+      <button class="btn btn-outline" onclick="DBM.resetAll()">🔄 恢复默认数据</button>
+    </div>
+    <!-- 子Tab导航 -->
+    <div class="dbm-subnav" id="dbm_subnav">
+      <button class="dbm-subtab active" onclick="DBM.switchSub('cabinet')" id="dbm_btn_cabinet">📦 箱体库</button>
+      <button class="dbm-subtab" onclick="DBM.switchSub('module')" id="dbm_btn_module">🟩 模组库</button>
+      <button class="dbm-subtab" onclick="DBM.switchSub('control')" id="dbm_btn_control">🎛️ 控制系统库</button>
+      <button class="dbm-subtab" onclick="DBM.switchSub('psu')" id="dbm_btn_psu">🔌 电源库</button>
+      <button class="dbm-subtab" onclick="DBM.switchSub('vprocessor')" id="dbm_btn_vprocessor">📺 视频处理器库</button>
+      <button class="dbm-subtab" onclick="DBM.switchSub('recvcard')" id="dbm_btn_recvcard">📥 接收卡库</button>
+    </div>
+
+    <!-- ====== 箱体库面板 ====== -->
+    <div id="dbm-panel-cabinet" class="dbm-panel">
+      <div class="dbm-toolbar">
+        <span class="dbm-table-title">箱体规格库 <span class="dbm-count" id="dbm_count_cabinet"></span></span>
+        <button class="btn btn-primary btn-sm" onclick="DBM.editItem('cabinet')">➕ 添加箱体</button>
+      </div>
+      <div class="dbm-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr><th>名称</th><th>尺寸(mm)</th><th>分类</th><th>备注</th><th>操作</th></tr>
+          </thead>
+          <tbody id="dbm_tbody_cabinet"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ====== 模组库面板 ====== -->
+    <div id="dbm-panel-module" class="dbm-panel" style="display:none">
+      <div class="dbm-toolbar">
+        <span class="dbm-table-title">模组规格库 <span class="dbm-count" id="dbm_count_module"></span></span>
+        <button class="btn btn-primary btn-sm" onclick="DBM.editItem('module')">➕ 添加模组</button>
+      </div>
+      <div class="dbm-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr><th>名称</th><th>像素尺寸(px)</th><th>物理尺寸(mm)</th><th>适用灯珠</th><th>模组功耗(W)</th><th>备注</th><th>操作</th></tr>
+          </thead>
+          <tbody id="dbm_tbody_module"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ====== 控制系统库面板 ====== -->
+    <div id="dbm-panel-control" class="dbm-panel" style="display:none">
+      <div class="dbm-toolbar">
+        <span class="dbm-table-title">控制系统库 <span class="dbm-count" id="dbm_count_control"></span></span>
+        <button class="btn btn-primary btn-sm" onclick="DBM.editItem('control')">➕ 添加型号</button>
+      </div>
+      <div class="dbm-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr><th>名称</th><th>类型</th><th>像素带载能力</th><th>网口数</th><th>备注</th><th>操作</th></tr>
+          </thead>
+          <tbody id="dbm_tbody_control"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ====== 电源库面板 ====== -->
+    <div id="dbm-panel-psu" class="dbm-panel" style="display:none">
+      <div class="dbm-toolbar">
+        <span class="dbm-table-title">电源规格库 <span class="dbm-count" id="dbm_count_psu"></span></span>
+        <button class="btn btn-primary btn-sm" onclick="DBM.editItem('psu')">➕ 添加电源</button>
+      </div>
+      <div class="dbm-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr><th>名称</th><th>额定功率(W)</th><th>输出电压(V)</th><th>备注</th><th>操作</th></tr>
+          </thead>
+          <tbody id="dbm_tbody_psu"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ====== 视频处理器库面板 ====== -->
+    <div id="dbm-panel-vprocessor" class="dbm-panel" style="display:none">
+      <div class="dbm-toolbar">
+        <span class="dbm-table-title">视频处理器库 <span class="dbm-count" id="dbm_count_vprocessor"></span></span>
+        <button class="btn btn-primary btn-sm" onclick="DBM.editItem('vprocessor')">➕ 添加处理器</button>
+      </div>
+      <div class="dbm-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr><th>名称</th><th>类型</th><th>最大分辨率</th><th>输出像素</th><th>发送输出数</th><th>输出接口</th><th>备注</th><th>操作</th></tr>
+          </thead>
+          <tbody id="dbm_tbody_vprocessor"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ====== 接收卡库面板 ====== -->
+    <div id="dbm-panel-recvcard" class="dbm-panel" style="display:none">
+      <div class="dbm-toolbar">
+        <span class="dbm-table-title">接收卡库 <span class="dbm-count" id="dbm_count_recvcard"></span></span>
+        <button class="btn btn-primary btn-sm" onclick="DBM.editItem('recvcard')">➕ 添加接收卡</button>
+      </div>
+      <div class="dbm-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr><th>名称</th><th>接口类型</th><th>接口数量</th><th>加载分辨率</th><th>备注</th><th>操作</th></tr>
+          </thead>
+          <tbody id="dbm_tbody_recvcard"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== DB编辑弹窗 ==================== -->
+<div id="dbm_modal" class="dbm-modal" style="display:none">
+  <div class="dbm-modal-content">
+    <div class="dbm-modal-header">
+      <span id="dbm_modal_title">添加</span>
+      <button onclick="DBM.closeModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#fff;line-height:1">✕</button>
+    </div>
+    <div class="dbm-modal-body" id="dbm_modal_body"></div>
+    <div class="dbm-modal-footer">
+      <button class="btn btn-primary" onclick="DBM.saveItem()">💾 保存</button>
+      <button class="btn btn-outline" onclick="DBM.closeModal()">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- 隐藏的导入文件input -->
+<input type="file" id="dbm_import_file" accept=".json" style="display:none" onchange="DBM.handleImport(this)">
+<input type="file" id="dbm_import_excel_file" accept=".xlsx,.xls" style="display:none" onchange="DBM.handleImportExcel(this)">
+</div><!-- end main -->
+
+</div><!-- end main -->
+
+  <div class="app-footer">需要定制版本或技术支持？微信：30428759</div>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js');
+    }
+  </script>
+  <script src="js/calc.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
